@@ -3,7 +3,7 @@ CREATE DATABASE employees_db;
 USE employees_db;
 
 CREATE TABLE department (
-    dept_id INT PRIMARY KEY AUTO_INCREMENT,
+   dept_id INT PRIMARY KEY AUTO_INCREMENT,
    dept name VARCHAR(30) NOT NULL
    
 );
