@@ -13,15 +13,15 @@ VALUES ("Jen"),
        ("Lee");
 
 INSERT INTO roles (job, salary, department)
-VALUES ("Group Leader",90000),
-       ("Scientist",64000),
-       ("Quality Assurance",60000), 
-       ("Research Scientist",80000),
-       ("Manager", 105500);
+VALUES ("Group Leader",90000,1),
+       ("Scientist",64000,3),
+       ("Quality Assurance",60000,2), 
+       ("Research Scientist",80000,5),
+       ("Manager", 105500,4);
 
-INSERT INTO employee (first_name, last_name)
-VALUES ("Landon", "Mccormick"),
-       ("Avery", "Cox"),
-       ("Jaiden", "Williams"), 
-       ("Summer", "Bledsoe"),
-       ("Arianna", "Brown");
+INSERT INTO employee (first_name, last_name, manager, roles)
+VALUES ("Landon", "Mccormick",5,4),
+       ("Avery", "Cox",1,3),
+       ("Jaiden", "Williams",3,2), 
+       ("Summer", "Bledsoe",2,1),
+       ("Arianna", "Brown",4,5);
