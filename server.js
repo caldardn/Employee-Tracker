@@ -23,22 +23,60 @@ const db = mysql.createConnection(
 init()
 
 const questions = () => {
-    prompt([{
+  inquirer
+    .prompt([
+      {
         type: "list",
         name: "start",
         message: "What would you like to do?",
         choices: [
-           "View All Employees",
-           "Add An Employee",
-           "Update Employee Role",
-           "View All Roles",
-           "Add Roll",
-           "View All Departments",
-           "Add A Department", 
-           "Quit",
-        ]
-    }])
-}
+          "View All Employees",
+          "Add An Employee",
+          "Update Employee Role",
+          "View All Roles",
+          "Add Role",
+          "View All Departments",
+          "Add A Department",
+          "Quit",
+        ],
+      },
+    ])
+    .then((res) => {
+      let choice = res.start
+      switch (choice) {
+        case "View All Employees":
+          viewAllEmployees();
+          break;
+        case "Add An Employee":
+          addEmployee();
+          break;
+        case "Update Employee Role":
+          updateEmployeeRole();
+          break;
+        case "View All Roles":
+          viewAllRoles();
+          break;
+        case "Add Role":
+          addRole();
+          break;
+        case "View All Departments":
+          viewAllDepartments();
+          break;
+        case "Add A Department":
+          addDepartment();
+          break;
+        case "Quit":
+          console.log("Goodbye!");
+          break;
+        default:
+          console.log("Invalid choice. Please try again.");
+          questions();
+          break;
+      }
+    });
+};
+
+    
 
 const init = () => {
     intoMessage(["Hello"])
