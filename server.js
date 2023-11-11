@@ -44,8 +44,8 @@ const questions = () => {
     .then((res) => {
       let choice = res.start
       switch (choice) {
-        case "View All Employees":
-          viewAllEmployees();
+        case "View All Employees": db.query('SELECT * FROM em')
+          questions();
           break;
         case "Add An Employee":
           addEmployee();
