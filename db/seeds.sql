@@ -1,4 +1,4 @@
-INSERT INTO departments (dept_name) VALUES 
+INSERT INTO departments (dept) VALUES 
    ("Molecular genomics"),
    ("Flow cytometry"),
    ("Cell culture"), 
@@ -12,7 +12,7 @@ INSERT INTO manager (leader) VALUES
    ("Joe"),
    ("Lee");
 
--- Insert data into the child tables after the parent tables are populated
+
 INSERT INTO roles (job, salary, department) VALUES 
    ("Group Leader", 90000, 1),
    ("Scientist", 64000, 3),
@@ -20,7 +20,6 @@ INSERT INTO roles (job, salary, department) VALUES
    ("Research Scientist", 80000, 5),
    ("Manager", 105500, 4);
 
--- Now, insert data into the employee table
 INSERT INTO employee (first_name, last_name, manager, roles) VALUES 
    ("Landon", "Mccormick", 4, 5),
    ("Avery", "Cox", 1, 3),
