@@ -20,8 +20,8 @@ VALUES ("Group Leader",90000,1),
        ("Manager", 105500,4);
 
 INSERT INTO employee (first_name, last_name, manager, roles)
-VALUES ("Landon", "Mccormick",5,4),
+VALUES ("Landon", "Mccormick",5,1),
        ("Avery", "Cox",1,3),
        ("Jaiden", "Williams",3,2), 
-       ("Summer", "Bledsoe",2,1),
+       ("Summer", "Bledsoe",2,4),
        ("Arianna", "Brown",4,5);
