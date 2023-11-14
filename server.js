@@ -23,24 +23,22 @@ const db = mysql.createConnection(
 init();
 
 const questions = () => {
-  prompt([
-    {
-      type: "list",
-      name: "start",
-      message: "What would you like to do?",
-      choices: [
-        "View All Employees",
-        "Add An Employee",
-        "Update Employee Role",
-        "View All Roles",
-        "Add Roll",
-        "View All Departments",
-        "Add A Department",
-        "Quit",
-      ],
-    },
-  ]).then();
-};
+    prompt([{
+        type: "list",
+        name: "start",
+        message: "What would you like to do?",
+        choices: [
+           "View All Employees",
+           "Add An Employee",
+           "Update Employee Role",
+           "View All Roles",
+           "Add Roll",
+           "View All Departments",
+           "Add A Department", 
+           "Quit",
+        ]
+    }])
+}
 
 const init = () => {
   intoMessage(["Hello"]);
