@@ -44,7 +44,8 @@ const questions = async () => {
     switch (choice) {
       case "View All Employees":
         const employees = await getAllEmployees();
-        printTable(employees,);
+        console.log("\n")
+        printTable(employees);
         
         break;
 
@@ -83,13 +84,13 @@ const questions = async () => {
         break;
     }
 
-    // return questions();
+  
   } catch (err) {
     console.error(err);
   }
 };
 
-const getAllEmployees = () => {
+const getAllEmployees =  () => {
   return new Promise((resolve, reject) => {
     connection.query("SELECT * FROM employee_all", (err, results) => {
       if (err) {
@@ -300,12 +301,12 @@ const updateEmployee = async () => {
       FROM employee_names AS employee_names
       LEFT JOIN manager AS manager ON employee_names.manager_id = manager.man_id
     `;
-    const [results, fields] = await new Promise((resolve, reject) => {
+    const [results] = await new Promise((resolve, reject) => {
       connection.promise().query(query, (err, results, fields) => {
         if (err) {
           reject(err);
         } else {
-          resolve([results, fields]);
+          resolve([results]);
         }
       });
     })
