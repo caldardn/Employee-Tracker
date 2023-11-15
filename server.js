@@ -1,15 +1,23 @@
-const express = require('express');
-// const mysql = require('mysql2');
-const connection = require('./config/connect');
+const express = require("express");
+const connection = require("./config/connect");
 // const validate = require('./validate/validate');
 const inquirer = require("inquirer");
-const { printTable } = require('console-table-printer')
+const cTable = require('console.table');
+const { printTable } = require("console-table-printer");
 const PORT = process.env.PORT || 3001;
 const app = express();
 
 // Express middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+
+connection.connect((err) => {
+  if (err) {
+    console.error("error connecting: ");
+    return;
+  }
+  questions();
+});
 
 const questions = async () => {
   try {
@@ -36,7 +44,8 @@ const questions = async () => {
     switch (choice) {
       case "View All Employees":
         const employees = await getAllEmployees();
-        printTable(employees);
+        printTable(employees,);
+        
         break;
 
       case "Add An Employee":
@@ -68,14 +77,13 @@ const questions = async () => {
       case "Quit":
         quit();
         console.log("Goodbye!");
-        return;
 
       default:
         console.log("Invalid choice");
         break;
     }
 
-    return questions();
+    // return questions();
   } catch (err) {
     console.error(err);
   }
@@ -88,8 +96,10 @@ const getAllEmployees = () => {
         reject(err);
       } else {
         resolve(results);
+        questions();
       }
     });
+    
   });
 };
 
@@ -100,6 +110,7 @@ const getAllRoles = () => {
         reject(err);
       } else {
         resolve(results);
+        questions();
       }
     });
   });
@@ -112,12 +123,11 @@ const getAllDepartments = () => {
         reject(err);
       } else {
         resolve(results);
+        questions();
       }
     });
   });
 };
-
-
 
 // Add employee
 const addEmployee = async () => {
@@ -155,7 +165,12 @@ const addEmployee = async () => {
       (manager) => manager.leader === employeeData.managerChoice
     );
 
-    await insertEmployee(employeeData.firstName, employeeData.lastName, role.role_id, manager.man_id);
+    await insertEmployee(
+      employeeData.firstName,
+      employeeData.lastName,
+      role.role_id,
+      manager.man_id
+    );
 
     console.log("Employee added!");
     questions();
@@ -190,14 +205,19 @@ const getManagers = () => {
 
 const insertEmployee = (firstName, lastName, roleId, managerId) => {
   return new Promise((resolve, reject) => {
-    const sql = "INSERT INTO employee (first_name, last_name, roles, manager) VALUES (?, ?, ?, ?)";
-    connection.query(sql, [firstName, lastName, roleId, managerId], (err, results) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(results);
+    const sql =
+      "INSERT INTO employee (first_name, last_name, roles, manager) VALUES (?, ?, ?, ?)";
+    connection.promise().query(
+      sql,
+      [firstName, lastName, roleId, managerId],
+      (err, results) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(results);
+        }
       }
-    });
+    );
   });
 };
 
@@ -205,24 +225,32 @@ const insertEmployee = (firstName, lastName, roleId, managerId) => {
 
 const addRole = async () => {
   try {
-    const departments = connection.query('SELECT * FROM department');
+    const departments = await new Promise((resolve, reject) => {
+      connection.query("SELECT * FROM department", (err, results) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(results);
+        }
+      });
+    });
     const deptCurrent = departments.map((department) => department.dept);
     const keysDept = departments.map((department) => department.dept_id);
 
     const answers = await inquirer.prompt([
       {
-        type: 'input',
-        name: 'addRole',
+        type: "input",
+        name: "addRole",
         message: "What would you like to call the new role?",
       },
       {
-        type: 'input',
-        name: 'salary',
+        type: "input",
+        name: "salary",
         message: "What is the role's salary?",
       },
       {
-        type: 'list',
-        name: 'deptChoice',
+        type: "list",
+        name: "deptChoice",
         message: "What is the role's department?",
         choices: deptCurrent,
       },
@@ -232,31 +260,107 @@ const addRole = async () => {
     const departmentId = keysDept[deptIndex];
 
     const sql = `INSERT INTO roles(job, salary, department) VALUES('${answers.addRole}', ${answers.salary}, ${departmentId})`;
-    await connection.query(sql);
-    console.log('Role added successfully.');
+    await connection.promise().query(sql);
+    console.log("Role added successfully.");
 
-    initialQuestions();
+    questions();
   } catch (error) {
-    console.error('Error adding role:', error);
+    console.error("Error adding role:", error);
   }
-}
+};
 
 // add department
 
+const addDept = async () => {
+  try {
+    const { addDep } = await inquirer.prompt([
+      {
+        type: "input",
+        name: "addDep",
+        message: "What would you like to call the new department?",
+      },
+    ]);
 
+    const sql = `INSERT INTO department(dept) VALUES('${addDep}')`;
+    await connection.promise().query(sql);
+
+    console.log("Department added successfully.");
+    questions();
+  } catch (error) {
+    console.error("Error adding department:", error);
+  }
+};
+
+// update employee
+
+const updateEmployee = async () => {
+  try {
+    const query = `
+      SELECT employee_names.id, CONCAT(employee_names.first_name, ' ', employee_names.last_name) AS employee_names, CONCAT(manager.first_name, ' ', manager.last_name) AS manager_name
+      FROM employee_names AS employee_names
+      LEFT JOIN manager AS manager ON employee_names.manager_id = manager.man_id
+    `;
+    const [results, fields] = await new Promise((resolve, reject) => {
+      connection.promise().query(query, (err, results, fields) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve([results, fields]);
+        }
+      });
+    })
+
+    const empCurrent = results.map((row) => row.employee_name);
+    const keysEmployee = results.map((row) => row.id);
+    const managerCurrent = results.map((row) => row.manager_name);
+    const keysManager = results.map((row) => row.manager_id);
+
+    const res = await inquirer.prompt([
+      {
+        type: "input",
+        name: "confirm",
+        message: "Are you sure you want to update an employee?",
+        default: "yes",
+      },
+      {
+        type: "list",
+        name: "empChoice",
+        message: "Which Employee would you like to update?",
+        choices: empCurrent,
+      },
+      {
+        type: "list",
+        name: "managerChoice",
+        message: "Who is the employee's manager?",
+        choices: managerCurrent,
+      },
+    ]);
+
+    const num = keysEmployee[empCurrent.indexOf(res.empChoice)];
+    const num2 = keysManager[managerCurrent.indexOf(res.managerChoice)];
+
+    const sql = `UPDATE employee_names SET manager=${num2} WHERE id=${num}`;
+    await connection.promise().query(sql);
+
+    console.log("Employee updated successfully.");
+    questions();
+  } catch (error) {
+    console.error("Error updating employee:", error);
+  }
+};
 
 app.listen(PORT, () => {
-    console.log(`Server running on port http://localhost:${PORT}`);
-  });
- 
-  const quit = () => {
-    console.log("Goodbye!");
-    process.exit();
-  };
+  console.log(`Server running on port http://localhost:${PORT}`);
+});
 
-const init = () => {
-    // intoMessage(["Hello"])
+const quit = () => {
+  console.log("Goodbye!");
+  process.exit();
+  
+};
 
-    questions()
-}
-init()
+// const init = () => {
+
+//   questions();
+// };
+
