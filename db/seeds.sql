@@ -1,4 +1,4 @@
-INSERT INTO departments (dept) VALUES 
+INSERT INTO department (dept) VALUES 
    ("Molecular genomics"),
    ("Flow cytometry"),
    ("Cell culture"), 
@@ -20,7 +20,7 @@ INSERT INTO roles (job, salary, department) VALUES
    ("Research Scientist", 80000, 5),
    ("Manager", 105500, 4);
 
-INSERT INTO employee (first_name, last_name, manager, roles) VALUES 
+INSERT INTO employee_names (first_name, last_name, manager, roles) VALUES 
    ("Landon", "Mccormick", 4, 5),
    ("Avery", "Cox", 1, 3),
    ("Jaiden", "Williams", 3, 2), 
