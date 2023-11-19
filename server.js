@@ -3,6 +3,8 @@ const connection = require("./config/connect");
 // const validate = require('./validate/validate');
 const inquirer = require("inquirer");
 const { printTable } = require("console-table-printer");
+const chalk = require('chalk');
+const figlet = require('figlet');
 const PORT = process.env.PORT || 3001;
 const app = express();
 
@@ -10,13 +12,18 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-connection.connect((err) => {
-  if (err) {
-    console.error("error connecting: ");
-    return;
-  }
+connection.connect((error) => {
+  if (error) throw error;
+  console.log(chalk.magentaBright.bold(`====================================================================================`));
+  console.log(``);
+  console.log(chalk.blueBright.bold(figlet.textSync('Employee Tracker')));
+  console.log(``);
+  console.log(chalk.greenBright.bold('Created By: David Caldarone'));
+  console.log(``);
+  console.log(chalk.magentaBright.bold(`====================================================================================`));
   questions();
 });
+
 
 const questions = () => {
   inquirer
@@ -42,7 +49,11 @@ const questions = () => {
       switch (choice) {
         case "View All Employees":
           connection.query("SELECT * FROM employee_all", (err, results) => {
-            printTable(results);
+            console.log(chalk.magentaBright.bold(`====================================================================================`));
+            console.log(`                              ` + chalk.blue.bold("Employees List"));
+            console.log(chalk.magentaBright.bold(`====================================================================================`));
+            console.table(results);
+            console.log(chalk.magentaBright.bold(`====================================================================================`));
             questions();
           });
           break;
@@ -61,7 +72,11 @@ const questions = () => {
               console.error(err);
             } else {
               console.log("\n");
-              printTable(results);
+              console.log(chalk.magentaBright.bold(`====================================================================================`));
+              console.log(`                              ` + chalk.blue.bold("All Roles"));
+              console.log(chalk.magentaBright.bold(`====================================================================================`));
+              console.table(results);
+              console.log(chalk.magentaBright.bold(`====================================================================================`));
               questions();
             }
           });
@@ -78,7 +93,12 @@ const questions = () => {
               console.error(err);
             } else {
               console.log("\n");
-              printTable(results);
+              console.log("\n");
+              console.log(chalk.magentaBright.bold(`====================================================================================`));
+              console.log(`                              ` + chalk.blue.bold("All Departments"));
+              console.log(chalk.magentaBright.bold(`====================================================================================`));
+              console.table(results);
+              console.log(chalk.magentaBright.bold(`====================================================================================`));
               questions();
             }
           });
@@ -102,6 +122,8 @@ const questions = () => {
       console.error(err);
     });
 };
+
+//add employee
 
 const addEmployee = () => {
   new Promise((resolve, reject) => {
@@ -152,11 +174,10 @@ const addEmployee = () => {
         ])
         .then((employeeData) => {
           const role = roles.find((role) => role.job === employeeData.roleChoice);
-          console.log(role);
           const manager = managers.find(
             (manager) => manager.leader === employeeData.managerChoice
           );
-          console.log(manager);
+         
 
           const sql =
             "INSERT INTO employee_names (first_name, last_name, roles, manager) VALUES (?, ?, ?, ?)";
@@ -167,7 +188,9 @@ const addEmployee = () => {
             manager.man_id,
           ]);
 
-          console.log("Employee added!");
+          console.log(chalk.magentaBright.bold(`====================================================================================`));
+          console.log(chalk.blueBright(`Employee successfully added!`));
+          console.log(chalk.magentaBright.bold(`====================================================================================`));
           questions();
         });
     })
@@ -225,8 +248,9 @@ const addRole = () => {
       return connection.promise().query(sql);
     })
     .then(() => {
-      console.log("Role added successfully.");
-      // questions();
+      console.log(chalk.magentaBright.bold(`====================================================================================`));
+      console.log(chalk.blueBright(`Role added successfully!`));
+      console.log(chalk.magentaBright.bold(`====================================================================================`));
     })
     .catch((error) => {
       console.error("Error adding role:", error);
@@ -248,8 +272,10 @@ const addDept = async () => {
     const sql = `INSERT INTO department(dept) VALUES('${addDep}')`;
     await connection.promise().query(sql);
 
-    console.log("Department added successfully.");
-    // questions();
+    console.log(chalk.magentaBright.bold(`====================================================================================`));
+    console.log(chalk.blueBright(`Department successfully added!`));
+    console.log(chalk.magentaBright.bold(`====================================================================================`));
+  
   } catch (error) {
     console.error("Error adding department:", error);
   }
@@ -258,98 +284,52 @@ const addDept = async () => {
 // update employee
 
 const updateEmployee = async () => {
-  // try {
-  //   const query = `
-  //     SELECT employee_names.id, CONCAT(employee_names.first_name, ' ', employee_names.last_name) AS employee_names, CONCAT(manager.first_name, ' ', manager.last_name) AS manager_name
-  //     FROM employee_names AS employee_names
-  //     LEFT JOIN manager AS manager ON employee_names.manager_id = manager.man_id
-  //   `;
-
-  //   const [results] = await connection.promise().query(query);
-  //   console.log("results", results);
-  //   const empCurrent = results.map((row) => row.employee_name);
-  //   const keysEmployee = results.map((row) => row.id);
-  //   const managerCurrent = results.map((row) => row.manager_name);
-  //   const keysManager = results.map((row) => row.manager_id);
-
-  //   const res = await inquirer.prompt([
-  //     {
-  //       type: "input",
-  //       name: "confirm",
-  //       message: "Are you sure you want to update an employee?",
-  //       default: "yes",
-  //     },
-  //     {
-  //       type: "list",
-  //       name: "empChoice",
-  //       message: "Which Employee would you like to update?",
-  //       choices: empCurrent,
-  //     },
-  //     {
-  //       type: "list",
-  //       name: "managerChoice",
-  //       message: "Who is the employee's manager?",
-  //       choices: managerCurrent,
-  //     },
-  //   ]);
-
-  //   const num = keysEmployee[empCurrent.indexOf(res.empChoice)];
-  //   const num2 = keysManager[managerCurrent.indexOf(res.managerChoice)];
-
-  //   const sql = `UPDATE employee_names SET manager=${num2} WHERE id=${num}`;
-  //   await connection.promise().query(sql);
-
-  //   console.log("Employee updated successfully.");
-  //   questions();
-  // } catch (error) {
-  //   console.error("Error updating employee:", error);
-  // }
+  
   try {
     const query = `
-      SELECT employee_names.id, CONCAT(employee_names.first_name, ' ', employee_names.last_name), 
-      FROM employee_names AS employee_names
-      LEFT JOIN manager AS manager ON manager_id = manager.man_id
+      SELECT employee_names.id, CONCAT(employee_names.first_name, ' ', employee_names.last_name) AS employee_name
+      FROM employee_names
     `;
-
     const [results] = await connection.promise().query(query);
-    console.log("results", results);
-
     const empCurrent = results.map((row) => row.employee_name);
     const keysEmployee = results.map((row) => row.id);
-    const managerCurrent = results.map((row) => row.manager_name);
-
+  
+    const rolesQuery = `
+      SELECT role_id, job
+      FROM roles
+    `;
+    const [rolesResults] = await connection.promise().query(rolesQuery);
+  
+    const rolesChoices = rolesResults.map((row) => row.job);
+  
     const res = await inquirer.prompt([
-      {
-        type: "input",
-        name: "confirm",
-        message: "Are you sure you want to update an employee?",
-        default: "yes",
-      },
       {
         type: "list",
         name: "empChoice",
-        message: "Which Employee would you like to update?",
+        message: "Which employee would you like to update?",
         choices: empCurrent,
       },
       {
         type: "list",
-        name: "managerChoice",
-        message: "Who is the employee's manager?",
-        choices: managerCurrent,
+        name: "roleChoice",
+        message: "Select the new role for the employee:",
+        choices: rolesChoices,
       },
     ]);
-
+  
     const employeeId = keysEmployee[empCurrent.indexOf(res.empChoice)];
-    const managerId = keysEmployee[empCurrent.indexOf(res.managerChoice)];
-
-    const sql = `UPDATE employee_names SET manager_id = ${managerId} WHERE id = ${employeeId}`;
+    const roleId = rolesResults.find((row) => row.job === res.roleChoice).role_id;
+  
+    const sql = `UPDATE employee_names SET roles = ${roleId} WHERE id = ${employeeId}`;
     await connection.promise().query(sql);
+    console.log(chalk.magentaBright.bold(`====================================================================================`));
+    console.log(chalk.blueBright(`Employee successfully updated!`));
+    console.log(chalk.magentaBright.bold(`====================================================================================`));
 
-    console.log("Employee updated successfully.");
-    questions();
   } catch (error) {
     console.error("Error updating employee:", error);
   }
+
 };
 
 app.listen(PORT, () => {
