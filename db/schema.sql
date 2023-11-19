@@ -34,3 +34,9 @@ CREATE TABLE employee_names (
   FOREIGN KEY (roles)
   REFERENCES roles(role_id)
 );
+
+
+-- SELECT employee_names.first_name, employee_names.last_name, roles.job, roles.salary
+-- FROM employee_names
+-- INNER JOIN roles
+-- ON employee_names.roles = roles.role_id;
